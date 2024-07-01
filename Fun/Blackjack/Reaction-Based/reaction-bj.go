@@ -1,5 +1,8 @@
 {{/* trigger type : Reaction - Added reaction only */}}
 
+{{/*Edit this variable to match your currency system. Defaulted to the Public YAG "CREDITS" system*/}}
+{{$currency := "CREDITS"}}
+
 {{if not .ReactionMessage.Embeds}}{{return}}{{end}}
 {{if and ( $data := (dbGet .User.ID "bj").Value ) (in (((index .Message.Embeds 0).Footer.Text)) (str .User.ID)) (eq .Message.ID (toInt $data.msg_id))}}
     {{$embed := structToSdict (index .Message.Embeds 0)}}
@@ -27,7 +30,7 @@
             {{$embed.Set "title" "You Busted"}}
             {{deleteAllMessageReactions nil .Message.ID}}
             {{$embed.Set "description" (printf "%s's Hand:\n%s\n%s\nTotal: %d\n\nDealer's Hand:\n%s\n%s\nTotal:  %d \n\nYou lost `%d` Credits." .User.String (joinStr " " $p_t.StringSlice) (joinStr " " $p_b.StringSlice) $p_total (joinStr " " $d_t.StringSlice) (joinStr " " $d_b.StringSlice) $d_total $amount)}}
-            {{$notNice := dbIncr .User.ID "CREDITS" (mult $amount -1)}}
+            {{$notNice := dbIncr .User.ID $currency (mult $amount -1)}}
             {{dbDel .User.ID "bj"}}
             {{cancelScheduledUniqueCC .CCID (print .User.ID "bj")}}
         {{end}}
@@ -54,18 +57,18 @@
             {{$embed.Set "color" 0x00FF00}}
             {{$embed.Set "title" "Dealer Busted"}}
             {{$embed.Set "description" (printf "%s's Hand:\n%s\n%s\nTotal: %d\n\nDealer's Hand:\n%s\n%s\nTotal:  %d\n\nYou won `%d` Credits." .User.String (joinStr " " $p_t.StringSlice) (joinStr " " $p_b.StringSlice) $p_total (joinStr " " $d_t.StringSlice) (joinStr " " $d_b.StringSlice) $d_total $amount)}}
-            {{$nice := dbIncr .User.ID "CREDITS" (mult 2 $amount)}}
+            {{$nice := dbIncr .User.ID $currency (mult 2 $amount)}}
         {{else}}
             {{if gt $p_total $d_total}}
                 {{$embed.Set "color" 0x00FF00}} 
                 {{$embed.Set "title" "You Won!"}}
                 {{$embed.Set "description" (printf "%s's Hand:\n%s\n%s\nTotal: %d\n\nDealer's Hand:\n%s\n%s\nTotal:  %d\n\nYou won `%d` Credits." .User.String (joinStr " " $p_t.StringSlice) (joinStr " " $p_b.StringSlice) $p_total (joinStr " " $d_t.StringSlice) (joinStr " " $d_b.StringSlice) $d_total $amount)}}
-                {{$nice := dbIncr .User.ID "CREDITS" (mult 2 $amount)}}
+                {{$nice := dbIncr .User.ID $currency (mult 2 $amount)}}
             {{else if lt $p_total $d_total}}
                 {{$embed.Set "color" 0xFF0000}}
                 {{$embed.Set "title" "You Lost!"}}
                 {{$embed.Set "description" (printf "%s's Hand:\n%s\n%s\nTotal: %d\n\nDealer's Hand:\n%s\n%s\nTotal:  %d\n\nYou Lost `%d` Credits." .User.String (joinStr " " $p_t.StringSlice) (joinStr " " $p_b.StringSlice) $p_total (joinStr " " $d_t.StringSlice) (joinStr " " $d_b.StringSlice) $d_total $amount)}}
-                {{$nice := dbIncr .User.ID "CREDITS" (mult $amount -1)}}
+                {{$nice := dbIncr .User.ID $currency (mult $amount -1)}}
             {{else if eq $p_total $d_total}}
                 {{$embed.Set "color" 0xFFFFFF}}
                 {{$embed.Set "title" "It's a Tie!"}}

@@ -1,7 +1,11 @@
 {{/* Recommend trigger : regex : `\A(?:\-|<@!?204255221017214977>)\s*((?:b(?:lack)?j(?:ack)?)|(?:bal(?:ance)?)|(?:give(?:balance)?)|(?:add(?:balance)?))(?: +|\z)`
 Copyright (c): Shadow21A
+Extra-Modified for use by me : savage4618
 Repository: https://github.com/Shadow21AR/Yag-CC
 Delete this if u need char space */}}
+
+{{/*Edit this variable to match your currency system. Defaulted to the Public YAG "CREDITS" system*/}}
+{{$currency := "CREDITS"}}
 
 {{$hitEmoji := "hit:874954948801073163"}}
 {{$stayEmoji := "stay:874954815736807454"}}
@@ -16,7 +20,7 @@ Delete this if u need char space */}}
         {{end}}
         {{$args := parseArgs 0 "__**Usage:**__ -bj <amount>" (carg "int" "Amount")}}
         {{$amount := 0}}{{if $args.IsSet 0}}{{$amount = $args.Get 0}}{{end}}
-        {{$ack := (dbGet .User.ID "CREDITS").Value | toInt}}
+        {{$ack := (dbGet .User.ID $currency).Value | toInt}}
         {{if gt $amount $ack}}
             {{sendMessage nil (print "Not enough credits!!!\nCheck balance with `-bal` \nYou can play without any amount by `bj` / `blackjack`.")}}
             {{return}}
@@ -101,7 +105,7 @@ Delete this if u need char space */}}
             {{$title = "You Got BLACKJACK!!"}}
             {{$color = 0x00FF00}}
             {{$content = (printf "%s's Hand:\n%s\n%s\nTotal: %d\n\nDealer's Hand:\n%s\n%s\nTotal: ??\n You won **5X `%d` credits.**" .User.String (joinStr " " $p_t.StringSlice) (joinStr " " $p_b.StringSlice) $p_total (joinStr " " $d_t.StringSlice) (joinStr " " $d_b.StringSlice) $amount )}}
-            {{$nice := dbIncr .User.ID "CREDITS" (mult 5 $amount)}}
+            {{$nice := dbIncr .User.ID $currency (mult 5 $amount)}}
         {{end}}
         {{$embed := cembed 
         "title" $title
@@ -120,7 +124,7 @@ Delete this if u need char space */}}
         {{$args := parseArgs 0 (print "__To check balance__ : `" $prefix "bal [@user]Optional`") (carg "member" "user")}}
         {{$user := .User}}
         {{if $args.IsSet 0}}{{$user = ($args.Get 0).User}}{{end}}
-        {{sendMessage nil (print $user.Mention "'s balance is : " (or (toInt (dbGet $user.ID "CREDITS").Value) 0))}}
+        {{sendMessage nil (print $user.Mention "'s balance is : " (or (toInt (dbGet $user.ID $currency).Value) 0))}}
     {{else if reFind `(?i)add(?:balance)?` $cmd}} {{/* this is the code to handle an admin giving a player credits */}}
         {{$args := parseArgs 2 (print "__To add balance__: `" $prefix "add @user <amount>`") (carg "member" "user") (carg "int" "amount" 0 100000000)}}
         {{$user := .User}} {{$value := 0}}
@@ -128,17 +132,17 @@ Delete this if u need char space */}}
         {{if $args.IsSet 1}}{{$value = $args.Get 1}}{{end}}
         {{$perms := "Administrator"}}
         {{if (in (split (index (split (exec "viewperms") "\n") 2) ", ") $perms)}}
-            {{$_ := dbIncr $user.ID "CREDITS" $value}}
+            {{$_ := dbIncr $user.ID $currency $value}}
             {{sendMessage nil (print "Success!\nAdded " $value " to " $user.Username "'s balance." )}}
         {{else}}
             {{sendMessage nil (print "You can't use this command\nYou need at least one of these perms: " $perms)}}
         {{end}}
     {{else if reFind `(?i)give(?:balance)?` $cmd}} {{/* this is the code to handle a user giving another user some credits. */}}
         {{$args := parseArgs 2 (print "__To give__ : `" $prefix "give @user [Amount]`") (carg "member" "user") (carg "int" "amount to give" 0 100000000)}}
-        {{$bal := (or (dbGet .User.ID "CREDITS").Value 0) | toInt}} {{$amount := $args.Get 1}}
+        {{$bal := (or (dbGet .User.ID $currency).Value 0) | toInt}} {{$amount := $args.Get 1}}
         {{if ge $bal $amount}}
-            {{$_ := dbIncr .User.ID "CREDITS" (mult -1 $amount)}}
-            {{$_ := dbIncr ($args.Get 0).User.ID "CREDITS" $amount}}
+            {{$_ := dbIncr .User.ID $currency (mult -1 $amount)}}
+            {{$_ := dbIncr ($args.Get 0).User.ID $currency $amount}}
             {{sendMessage nil (printf "%s gave `%d` credits to %s" .User.Username $amount ($args.Get 0).User.Username)}}
         {{else}}
             {{sendMessage nil "You can't give that much :c. Insufficient funds."}}
@@ -152,7 +156,7 @@ Delete this if u need char space */}}
         {{$embed := index (getMessage nil $msg).Embeds 0 | structToSdict}}
         {{$embed.Set "title" "BlackJack (inactive)"}}
         {{$embed.Set "description" (print $embed.Description "\n You lost `" $amt "`credits")}}
-        {{$_ := dbIncr .User.ID "CREDITS" (mult -1 $amt)}}
+        {{$_ := dbIncr .User.ID $currency (mult -1 $amt)}}
         {{editMessage nil $msg (cembed $embed )}}
         {{deleteAllMessageReactions nil $msg}}
         {{dbDel .User.ID "bj"}}

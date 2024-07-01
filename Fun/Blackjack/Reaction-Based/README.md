@@ -1,6 +1,7 @@
-# Yag-CC | Blackjack 
+# Yag-CC | Blackjack - Reaction Based
 
-Add all of these Custom Commands ([`main-bj.go`](https://github.com/Shadow21AR/Yag-CC/blob/main/Fun/Blackjack/main-bj.go), [`reaction-bj.go`](https://github.com/Shadow21AR/Yag-CC/blob/main/Fun/Blackjack/reaction-bj.go)) to your server.
+Add all of these Custom Commands ([`main-bj.go`](https://github.com/savage4618/yagpdb-ccs/blob/master/Fun/Blackjack/Reaction-Based/main-bj.go), [`reaction-bj.go`](https://github.com/savage4618/yagpdb-ccs/blob/master/Fun/Blackjack/Reaction-Basedreaction-bj.go)) to your server.
+
 
 > Disable Error Output on reaction CC
 
